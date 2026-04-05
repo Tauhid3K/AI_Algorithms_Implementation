@@ -1,34 +1,44 @@
+import numpy as np
 import random
-from typing import Callable, Tuple
+import matplotlib.pyplot as plt
 
+# Example function (same as before)
+def fun(x):
+    return -((x - 2) ** 2) + 4
 
-State = float
-
-
-def stochastic_hill_climbing(
-	start: State,
-	evaluate: Callable[[State], float],
-	neighbors: Callable[[State], list[State]],
-	max_steps: int = 1000,
-) -> Tuple[State, float]:
-	"""Choose randomly among improving neighbors."""
-	current = start
-	current_score = evaluate(current)
-
-	for _ in range(max_steps):
-		improving = [s for s in neighbors(current) if evaluate(s) > current_score]
-		if not improving:
-			break
-
-		next_state = random.choice(improving)
-		current, current_score = next_state, evaluate(next_state)
-
-	return current, current_score
-
+# Stochastic Hill Climbing
+def stochastic_hill_climb(fun, init, step=1.0, iteration=100):
+    x = init
+    
+    for i in range(iteration):  # Iterate for a fixed number of steps
+        # Generate neighbors
+        neighbors = [x + step, x - step]
+        # Evaluate neighbors
+        better_neighbors = [n 
+                            for n in neighbors 
+                            if fun(n) > fun(x)] 
+        # only keep neighbors that are better than current x
+        
+        print(f"Step {i+1}: Current x={x}, better neighbors={better_neighbors}") 
+        #Print current state and better neighbors
+        
+        if not better_neighbors:
+            # No improvement, stop
+            break
+        
+        # Randomly pick one of the better neighbors
+        x = random.choice(better_neighbors) # this is the stochastic part
+        
+    return x
 
 if __name__ == "__main__":
-	random.seed(12)
-	func = lambda x: -(x - 2.5) ** 2 + 8
-	nb = lambda x: [x - 0.3, x + 0.3]
-	state, score = stochastic_hill_climbing(0.0, func, nb)
-	print("Best state:", round(state, 4), "Score:", round(score, 4))
+    # Run stochastic hill climbing first (prints steps).
+    start = random.randint(-10, 10)
+    result = stochastic_hill_climb(fun, start, step=1, iteration=50)
+    print(f"Maximum found at x = {result}, f(x) = {fun(result)}")
+
+    # Show graph after the step-by-step output.
+    li = np.arange(-10, 10, 0.1)
+    plt.plot(li, fun(li))
+    plt.grid()
+    plt.show()

@@ -52,6 +52,7 @@ def romania_heuristic(city: str, goal: str) -> int:
 	"""SLD heuristic commonly used for goal='Bucharest'."""
 	if goal != "Bucharest":
 		return 0
+	# Return the straight-line distance to Bucharest.
 	return STRAIGHT_LINE_TO_BUCHAREST.get(city, 0)
 
 

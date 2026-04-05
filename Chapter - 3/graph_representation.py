@@ -5,6 +5,7 @@ def make_unweighted_graph(edges: Iterable[Tuple[Any, Any]], directed: bool = Fal
 	"""Build an unweighted adjacency list from edge pairs."""
 	graph: Dict[Any, List[Any]] = {}
 	for u, v in edges:
+		# Add the edge in adjacency-list form.
 		graph.setdefault(u, []).append(v)
 		graph.setdefault(v, [])
 		if not directed:
@@ -18,6 +19,7 @@ def make_weighted_graph(
 	"""Build a weighted adjacency list from (u, v, cost) triples."""
 	graph: Dict[Any, List[Tuple[Any, float]]] = {}
 	for u, v, cost in edges:
+		# Store neighbor and edge cost together.
 		graph.setdefault(u, []).append((v, cost))
 		graph.setdefault(v, [])
 		if not directed:

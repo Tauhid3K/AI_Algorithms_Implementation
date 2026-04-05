@@ -10,6 +10,7 @@ def expand(node: Node, graph: WeightedGraph) -> List[Node]:
 	"""Generate successor nodes from a weighted adjacency-list graph."""
 	children = []
 	for neighbor, step_cost in graph.get(node.state, []):
+		# Create a child node with updated path cost.
 		children.append(node.child(neighbor, step_cost))
 	return children
 

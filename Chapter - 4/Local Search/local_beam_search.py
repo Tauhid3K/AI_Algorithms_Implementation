@@ -1,48 +1,52 @@
 import random
-from typing import Callable, Tuple
 
 
-State = float
+def fun(x):
+	# Objective function to maximize.
+	return -((x - 2) ** 2) + 4
 
 
-def local_beam_search(
-	initial_states: list[State],
-	evaluate: Callable[[State], float],
-	neighbors: Callable[[State], list[State]],
-	k: int = 3,
-	max_steps: int = 200,
-) -> Tuple[State, float]:
-	"""Keep the best k states among all successors each iteration."""
-	beam = list(initial_states[:k])
-	if not beam:
-		raise ValueError("initial_states must not be empty")
+def local_beam_search(fun, k=4, start=-10, stop=10, step=1, iteration=10):
+	# Start with k random states.
+	states = [random.uniform(start, stop) for _ in range(k)]
+	# Show the initial beam.
+	print("Initial states:", [f"{state:.2f}" for state in states])
 
-	best_state = max(beam, key=evaluate)
-	best_score = evaluate(best_state)
+	for i in range(iteration):
+		# Create neighbours for every state in the beam.
+		neighbors = []
+		for s in states:
+			# Generate left and right neighbours for one state.
+			left = s - step
+			right = s + step
+			# Keep neighbours inside the allowed range.
+			if left < start:
+				left = start
+			if right > stop:
+				right = stop
+			neighbors.append(left)
+			neighbors.append(right)
 
-	for _ in range(max_steps):
-		all_successors = []
-		for state in beam:
-			all_successors.extend(neighbors(state))
+		# Keep current states and new neighbours together.
+		all_states = states + neighbors
+		# Remove duplicate states so the beam keeps more variety.
+		unique_states = list(dict.fromkeys(all_states))
 
-		if not all_successors:
-			break
+		# Pick the best k states for the next beam.
+		states = sorted(unique_states, key=fun, reverse=True)[:k]
 
-		all_successors.sort(key=evaluate, reverse=True)
-		beam = all_successors[:k]
+		# Show the current best state in this step.
+		print(
+			f"[Beam] Step {i + 1}: states={[f'{state:.2f}' for state in states]}, "
+			f"best={states[0]:.2f}, f(best)={fun(states[0]):.2f}"
+		)
 
-		candidate = beam[0]
-		candidate_score = evaluate(candidate)
-		if candidate_score > best_score:
-			best_state, best_score = candidate, candidate_score
-
-	return best_state, best_score
+	# Return the best state found in the beam.
+	return max(states, key=fun)
 
 
 if __name__ == "__main__":
-	random.seed(11)
-	func = lambda x: -(x - 2.7) ** 2 + 9
-	nb = lambda x: [x + random.uniform(-0.5, 0.5) for _ in range(4)]
-	starts = [random.uniform(-10, 10) for _ in range(5)]
-	state, score = local_beam_search(starts, func, nb)
-	print("Best state:", round(state, 4), "Score:", round(score, 4))
+	# Demo run.
+	best_x = local_beam_search(fun, 4, -10, 10, 1, 10)
+	print(f"Best x: {best_x:.2f}")
+	print(f"Best f(x): {fun(best_x):.2f}")

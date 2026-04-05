@@ -1,4 +1,5 @@
 def recursive_best_first_search(graph, heuristic, start, goal):
+	# RBFS uses recursion and an f-limit instead of a full priority queue.
 	def rbfs(node, g_cost, path, f_limit, visited):
 		if node == goal:
 			return g_cost, path, g_cost

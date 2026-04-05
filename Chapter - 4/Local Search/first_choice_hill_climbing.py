@@ -1,39 +1,35 @@
 import random
-from typing import Callable, Tuple
 
 
-State = float
+def fun(x):
+	return -((x - 2) ** 2) + 4
 
 
-def first_choice_hill_climbing(
-	start: State,
-	evaluate: Callable[[State], float],
-	neighbor_sampler: Callable[[State], State],
-	max_steps: int = 1000,
-	samples_per_step: int = 40,
-) -> Tuple[State, float]:
-	"""Accept the first sampled neighbor that improves the objective."""
-	current = start
-	current_score = evaluate(current)
+def first_choice_hill_climbing(func, init, step=2.0, max_iterations=1000):
+	# Start from the given initial state.
+	x = init
+	for i in range(max_iterations):
+		# Generate the two immediate neighbors.
+		neighbors = [x + step, x - step]
+		# Randomize order so the first improving neighbor is chosen.
+		random.shuffle(neighbors)
+		print(f"Step {i + 1}: current x = {x}, neighbor order = {neighbors}")
 
-	for _ in range(max_steps):
-		moved = False
-		for _ in range(samples_per_step):
-			candidate = neighbor_sampler(current)
-			score = evaluate(candidate)
-			if score > current_score:
-				current, current_score = candidate, score
-				moved = True
+		for neighbor in neighbors:
+			# Move as soon as one better neighbor is found.
+			if func(neighbor) > func(x):
+				x = neighbor
 				break
-		if not moved:
+		else:
+			# No better neighbor found.
 			break
 
-	return current, current_score
+	# Return the final local optimum.
+	return x
 
 
 if __name__ == "__main__":
-	random.seed(3)
-	func = lambda x: -(x - 1.8) ** 2 + 6
-	sampler = lambda x: x + random.uniform(-0.5, 0.5)
-	state, score = first_choice_hill_climbing(0.0, func, sampler)
-	print("Best state:", round(state, 4), "Score:", round(score, 4))
+	# Run a simple demo with a random starting point.
+	best_x = first_choice_hill_climbing(fun, random.randint(-20, 20), 2.0)
+	print("Best x:", best_x)
+	print("Best f(x):", fun(best_x))

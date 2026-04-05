@@ -30,9 +30,11 @@ def solve_eight_puzzle(start, heuristic_name="manhattan"):
 	else:
 		heuristic_fn = manhattan_distance
 
+	# frontier keeps the next states to explore, sorted by f = g + h.
 	# (f_cost = g+h, g_cost, state, path)
 	frontier = []
 	heappush(frontier, (heuristic_fn(start, GOAL_STATE), 0, start, [start]))
+	# best_cost stores the cheapest known path to each state.
 	best_cost = {start: 0}
 
 	while frontier:
