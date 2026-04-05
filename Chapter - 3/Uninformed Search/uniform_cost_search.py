@@ -1,23 +1,23 @@
 from heapq import heappop, heappush
-# for min-heap priority queue
+# Min-heap priority queue utilities.
 
 def ucs(graph, start, goal):
-	frontier = [(0, start, [start])] # (cost, node, path)
-	best_cost = {start: 0}			 # best cost to reach each node
+	frontier = [(0, start, [start])]  # (path_cost, node, path)
+	best_cost = {start: 0}  # cheapest known cost to each node
 
 	while frontier:
-		cost, node, path = heappop(frontier)  # get lowest cost node
+		cost, node, path = heappop(frontier)  # expand the lowest-cost path first
 
 		if node == goal:
 			return path, cost
 
-		if cost > best_cost.get(node, float("inf")): # skip if we already have a better cost to this node
+		if cost > best_cost.get(node, float("inf")):  # stale entry, skip it
 			continue
 
 		for neighbor, step_cost in graph.get(node, []):
 			new_cost = cost + step_cost
-			if new_cost < best_cost.get(neighbor, float("inf")): 
-				# only add to frontier if we found a cheaper path to neighbor
+			if new_cost < best_cost.get(neighbor, float("inf")):
+				# push neighbor only when a cheaper route is found
 				best_cost[neighbor] = new_cost
 				heappush(frontier, (new_cost, neighbor, path + [neighbor]))
 
@@ -28,6 +28,7 @@ uniform_cost_search = ucs
 
 
 if __name__ == "__main__":
+	# Small Romania-map demo.
 	ROMANIA_MAP = {
 		"Arad": [("Zerind", 75), ("Sibiu", 140), ("Timisoara", 118)],
 		"Zerind": [("Arad", 75), ("Oradea", 71)],
