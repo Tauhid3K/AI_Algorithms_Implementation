@@ -53,3 +53,9 @@ def romania_heuristic(city: str, goal: str) -> int:
 	if goal != "Bucharest":
 		return 0
 	return STRAIGHT_LINE_TO_BUCHAREST.get(city, 0)
+
+
+if __name__ == "__main__":
+	# Quick sanity check for map and heuristic values.
+	print("Neighbors of Arad :", ROMANIA_MAP["Arad"])
+	print("h(Arad, Bucharest) :", romania_heuristic("Arad", "Bucharest"))

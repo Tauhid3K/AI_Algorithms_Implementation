@@ -1,48 +1,87 @@
-import heapq
-from itertools import count
-from typing import Any, Callable, Dict, List, Tuple
-
-from search_node import Node
+from heapq import heappop, heappush
 
 
-WeightedGraph = Dict[Any, List[Tuple[Any, float]]]
-
-
-def weighted_a_star_search(
-	graph: WeightedGraph,
-	start: Any,
-	goal: Any,
-	heuristic: Callable[[Any, Any], float],
-	weight: float = 1.5,
-):
-	"""Return (path, cost) using f(n)=g(n)+w*h(n), where w>=1."""
+def weighted_a_star(graph, heuristic, start, goal, weight=1.5):
 	if weight < 1.0:
 		raise ValueError("weight should be >= 1.0")
-	if start not in graph or goal not in graph:
-		return [], float("inf")
 
+	# (f_cost = g+w*h, g_cost, node, path)
 	frontier = []
-	counter = count()
-	root = Node(state=start, path_cost=0.0)
-	root.priority = weight * heuristic(start, goal)
-	heapq.heappush(frontier, (root.priority, next(counter), root))
-	best_cost = {start: 0.0}
+	heappush(frontier, (weight * heuristic[start], 0, start, [start]))
+	# Best known g-cost for each node.
+	best_cost = {start: 0}
 
 	while frontier:
-		_, _, node = heapq.heappop(frontier)
+		_, path_cost, node, path_list = heappop(frontier)
 
-		if node.state == goal:
-			return node.solution_path(), node.path_cost
+		if node == goal:
+			return path_cost, path_list
 
-		if node.path_cost > best_cost.get(node.state, float("inf")):
+		# Skip stale queue entries with worse g-cost.
+		if path_cost > best_cost.get(node, float("inf")):
 			continue
 
-		for neighbor, step_cost in graph.get(node.state, []):
-			new_cost = node.path_cost + step_cost
+		for neighbor, neighbor_cost in graph.get(node, []):
+			new_cost = path_cost + neighbor_cost
 			if new_cost < best_cost.get(neighbor, float("inf")):
 				best_cost[neighbor] = new_cost
-				child = node.child(neighbor, step_cost)
-				child.priority = new_cost + weight * heuristic(neighbor, goal)
-				heapq.heappush(frontier, (child.priority, next(counter), child))
+				# Weighted A*: f(n) = g(n) + w*h(n)
+				priority = new_cost + weight * heuristic.get(neighbor, float("inf"))
+				heappush(frontier, (priority, new_cost, neighbor, path_list + [neighbor]))
 
-	return [], float("inf")
+	return float("inf"), []
+
+
+weighted_a_star_search = weighted_a_star
+
+
+if __name__ == "__main__":
+	G = {
+		"Arad": [("Zerind", 75), ("Sibiu", 140), ("Timisoara", 118)],
+		"Zerind": [("Arad", 75), ("Oradea", 71)],
+		"Oradea": [("Zerind", 71), ("Sibiu", 151)],
+		"Sibiu": [("Arad", 140), ("Oradea", 151), ("Fagaras", 99), ("Rimnicu Vilcea", 80)],
+		"Timisoara": [("Arad", 118), ("Lugoj", 111)],
+		"Lugoj": [("Timisoara", 111), ("Mehadia", 70)],
+		"Mehadia": [("Lugoj", 70), ("Drobeta", 75)],
+		"Drobeta": [("Mehadia", 75), ("Craiova", 120)],
+		"Craiova": [("Drobeta", 120), ("Rimnicu Vilcea", 146), ("Pitesti", 138)],
+		"Rimnicu Vilcea": [("Sibiu", 80), ("Craiova", 146), ("Pitesti", 97)],
+		"Fagaras": [("Sibiu", 99), ("Bucharest", 211)],
+		"Pitesti": [("Rimnicu Vilcea", 97), ("Craiova", 138), ("Bucharest", 101)],
+		"Bucharest": [("Fagaras", 211), ("Pitesti", 101), ("Giurgiu", 90), ("Urziceni", 85)],
+		"Giurgiu": [("Bucharest", 90)],
+		"Urziceni": [("Bucharest", 85), ("Hirsova", 98), ("Vaslui", 142)],
+		"Hirsova": [("Urziceni", 98), ("Eforie", 86)],
+		"Eforie": [("Hirsova", 86)],
+		"Vaslui": [("Urziceni", 142), ("Iasi", 92)],
+		"Iasi": [("Vaslui", 92), ("Neamt", 87)],
+		"Neamt": [("Iasi", 87)],
+	}
+
+	H = {
+		"Arad": 366,
+		"Bucharest": 0,
+		"Craiova": 160,
+		"Drobeta": 242,
+		"Eforie": 161,
+		"Fagaras": 176,
+		"Giurgiu": 77,
+		"Hirsova": 151,
+		"Iasi": 226,
+		"Lugoj": 244,
+		"Mehadia": 241,
+		"Neamt": 234,
+		"Oradea": 380,
+		"Pitesti": 100,
+		"Rimnicu Vilcea": 193,
+		"Sibiu": 253,
+		"Timisoara": 329,
+		"Urziceni": 80,
+		"Vaslui": 199,
+		"Zerind": 374,
+	}
+
+	cost, path = weighted_a_star(G, H, "Arad", "Bucharest", weight=1.5)
+	print("Path :", " -> ".join(path) if path else "No path found")
+	print("Cost :", cost)
