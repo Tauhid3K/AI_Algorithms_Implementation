@@ -1,33 +1,46 @@
-from typing import Any, Dict, List, Tuple
+def depth_limited_search(graph, start, limit):
+	# Store visited nodes and traversal order
+	visited = set()
+	traversal_order = []
 
+	def dfs_limited(node, depth):
+		# Stop if depth limit is reached
+		if depth > limit:
+			return
 
-def depth_limited_search(
-	graph: Dict[Any, List[Any]], start: Any, goal: Any, limit: int
-) -> Tuple[List[Any], bool]:
-	"""Return (path, cutoff_happened)."""
-	if start not in graph or goal not in graph:
-		return [], False
+		if node not in visited:
+			visited.add(node)
+			traversal_order.append(node)
 
-	def recursive_dls(node: Any, depth: int, path: List[Any], on_path: set):
-		if node == goal:
-			return list(path), False
+		# Stop expanding when the limit is reached
 		if depth == limit:
-			return [], True
+			return
 
-		cutoff = False
+		# Visit neighbors using DFS style
 		for neighbor in graph.get(node, []):
-			if neighbor in on_path:
-				continue
-			on_path.add(neighbor)
-			path.append(neighbor)
-			result, child_cutoff = recursive_dls(neighbor, depth + 1, path, on_path)
-			if result:
-				return result, False
-			if child_cutoff:
-				cutoff = True
-			path.pop()
-			on_path.remove(neighbor)
+			dfs_limited(neighbor, depth + 1)
 
-		return [], cutoff
+	dfs_limited(start, 0)
+	return traversal_order
 
-	return recursive_dls(start, 0, [start], {start})
+
+if __name__ == "__main__":
+	# Example tree/graph
+	tree = {
+		'A': ['B', 'C'],
+		'B': ['D', 'E'],
+		'C': ['F', 'G'],
+		'D': ['H'],
+		'E': [],
+		'F': [],
+		'G': [],
+		'H': []
+	}
+
+	# Start node and depth limit
+	start_node = 'A'
+	limit = 3
+
+	# Run depth-limited DFS
+	traversal_order = depth_limited_search(tree, start_node, limit)
+	print("Traversal Order:", traversal_order)
