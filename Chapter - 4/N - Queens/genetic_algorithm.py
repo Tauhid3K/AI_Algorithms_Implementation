@@ -1,65 +1,91 @@
 import random
-from typing import Callable, List, Tuple
 
 
-Genome = List[float]
+def fun(state):
+	# Count how many queen pairs attack each other.
+	attacks = 0
+	size = len(state)
+	for i in range(size):
+		for j in range(i + 1, size):
+			if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
+				attacks += 1
+	return attacks
 
 
-def genetic_algorithm(
-	fitness: Callable[[Genome], float],
-	population_size: int = 30,
-	genome_length: int = 5,
-	generations: int = 80,
-	mutation_rate: float = 0.05,
-) -> Tuple[Genome, float]:
-	"""Simple real-valued GA with tournament selection and single-point crossover."""
-	if population_size < 2:
-		raise ValueError("population_size must be >= 2")
+def fitness(state):
+	# Higher fitness means fewer conflicts.
+	size = len(state)
+	max_pairs = (size * (size - 1)) // 2
+	return max_pairs - fun(state)
 
-	population = [
-		[random.uniform(-5, 5) for _ in range(genome_length)] for _ in range(population_size)
-	]
 
-	def tournament_select(k: int = 3) -> Genome:
-		candidates = random.sample(population, k=min(k, len(population)))
-		return max(candidates, key=fitness)
+def create_individual(size):
+	# One queen in each column, row chosen randomly.
+	return [random.randint(0, size - 1) for _ in range(size)]
 
-	def crossover(a: Genome, b: Genome) -> Genome:
-		point = random.randint(1, genome_length - 1)
-		return a[:point] + b[point:]
 
-	def mutate(g: Genome) -> Genome:
-		out = g[:]
-		for i in range(len(out)):
-			if random.random() < mutation_rate:
-				out[i] += random.uniform(-0.5, 0.5)
-		return out
+def selection(population):
+	# Tournament selection: pick the better of two random boards.
+	a, b = random.sample(population, 2)
+	return a if fitness(a) > fitness(b) else b
 
-	for _ in range(generations):
+
+def crossover(parent1, parent2):
+	# Combine the first part of one parent with the rest of the other.
+	size = len(parent1)
+	point = random.randint(1, size - 2)
+	return parent1[:point] + parent2[point:]
+
+
+def mutate(individual, mutation_rate):
+	# Randomly move one queen to a different row.
+	if random.random() < mutation_rate:
+		col = random.randint(0, len(individual) - 1)
+		individual[col] = random.randint(0, len(individual) - 1)
+	return individual
+
+
+def solve(size=8, population_size=100, mutation_rate=0.05, max_generations=10000):
+	# Start with a random population.
+	population = [create_individual(size) for _ in range(population_size)]
+	max_fitness = (size * (size - 1)) // 2
+
+	for generation in range(max_generations):
+		# Stop if we already found a perfect board.
+		for individual in population:
+			if fitness(individual) == max_fitness:
+				return individual, generation
+
+		# Build the next generation.
 		new_population = []
-		elite = max(population, key=fitness)
-		new_population.append(elite[:])
-
-		while len(new_population) < population_size:
-			p1 = tournament_select()
-			p2 = tournament_select()
-			child = crossover(p1, p2)
-			child = mutate(child)
+		for _ in range(population_size):
+			parent1 = selection(population)
+			parent2 = selection(population)
+			child = crossover(parent1, parent2)
+			child = mutate(child, mutation_rate)
 			new_population.append(child)
 
 		population = new_population
 
-	best = max(population, key=fitness)
-	return best, fitness(best)
+	return None, max_generations
+
+
+def print_board(state):
+	size = len(state)
+	for r in range(size):
+		row = ""
+		for c in range(size):
+			row += "Q " if state[c] == r else ". "
+		print(row)
+	print()
 
 
 if __name__ == "__main__":
 	random.seed(21)
-	target = [1.0, -2.0, 0.5, 3.0, -1.5]
+	solution, generations = solve(size=8, population_size=4, mutation_rate=0.1)
 
-	def fit(g):
-		return -sum((x - t) ** 2 for x, t in zip(g, target))
-
-	best_genome, best_fitness = genetic_algorithm(fit)
-	print("Best genome:", [round(x, 3) for x in best_genome])
-	print("Best fitness:", round(best_fitness, 4))
+	if solution:
+		print(f"Solution found in {generations} generations:\n")
+		print_board(solution)
+	else:
+		print("No solution found.")
