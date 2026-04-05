@@ -7,3 +7,5 @@ if __name__ == "__main__":
 	state, score = steepest_ascent_hill_climbing(0.0, func, nb)
 	print("Best state:", round(state, 4), "Score:", round(score, 4))
 
+# Output:
+# Best state: 3.2 Score: 10.0	
