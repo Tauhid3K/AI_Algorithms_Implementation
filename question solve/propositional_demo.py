@@ -1,8 +1,8 @@
-from logic import LogicalEngine
+from logic import PropositionalLogicEngine
 
 
 def solve_propositional_questions():
-    engine = LogicalEngine()
+    engine = PropositionalLogicEngine()
 
     questions = [
         (
@@ -16,6 +16,12 @@ def solve_propositional_questions():
             "If you get a 100 on the final exam, then you earn an A in the class.",
             "p -> q",
             {"p": "You get 100 on final exam", "q": "You earn an A"},
+        ),
+        (
+            "c",
+            "Take either 2 Advil or 3 Tylenol.",
+            "p OR q",
+            {"p": "Take 2 Advil", "q": "Take 3 Tylenol"},
         ),
         (
             "d",
