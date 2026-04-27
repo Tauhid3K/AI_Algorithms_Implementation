@@ -97,3 +97,10 @@ if __name__ == "__main__":
     print("\n[Visualization]")
     try: nn.plot()
     except: print("Plot not supported")
+
+""" only need to understand:
+Forward propagation (input → output)
+Activation function (sigmoid / ReLU)
+Backpropagation (error correction)
+Loss function (how wrong model is)
+Weight update rule"""
