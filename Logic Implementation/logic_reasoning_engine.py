@@ -3,25 +3,25 @@ Logic Implementation - Topic 1
 A comprehensive logic engine for propositional reasoning, truth tables, and SAT solving
 """
 
-import itertools
-import re
+import itertools  #generate truth table combinations
+import re         #handle pattern matching for expression parsing
 
 
 class LogicReasoningEngine:
     """Core logic reasoning engine with truth table generation and inference"""
 
     def __init__(self):
-        self.knowledge_base = []
+        self.knowledge_base = []  #store known facts and rules
 
     def preprocess(self, expression):
-        """Normalize logical operators"""
+        # Convert logic symbols to Python syntax for evaluation
         expr = expression.strip()
-        expr = expr.replace('<->', ' == ').replace('IFF', ' == ')
+        expr = expr.replace('<->', ' == ').replace('IFF', ' == ') #A ↔ B    ≡  A ⇔ B   ≡  A IFF B
         expr = re.sub(r'(\w+|\([^()]+\))\s*(?:->|IMPLIES)\s*(\w+|\([^()]+\))', 
-                      r'(not (\1) or (\2))', expr)
-        expr = re.sub(r'\bAND\b|&|\^', ' and ', expr)
-        expr = re.sub(r'\bOR\b|\|', ' or ', expr)
-        expr = re.sub(r'\bNOT\b|~', ' not ', expr)
+                      r'(not (\1) or (\2))', expr)      #A → B    ≡  ¬A ∨ B 
+        expr = re.sub(r'\bAND\b|&|\^', ' and ', expr)   #A AND B  ≡  A ∧ B
+        expr = re.sub(r'\bOR\b|\|', ' or ', expr)       #A OR B   ≡  A ∨ B
+        expr = re.sub(r'\bNOT\b|~', ' not ', expr)      #NOT A    ≡  ¬A
         return expr
 
     def extract_variables(self, expression):
